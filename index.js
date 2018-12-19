@@ -19,12 +19,11 @@ const client = yelp.client(process.env.apiKey);
 
 //Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
 //Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
-const APP_ID = undefined;
+const APP_ID = "amzn1.ask.skill.aacf2066-fbd6-4006-953c-2b568ef7281a";
 
-const SKILL_NAME = "Space Facts";
-const GET_FACT_MESSAGE = "Here's your fact: ";
+const SKILL_NAME = "I Don't know, you decide";
 const HELP_MESSAGE =
-  "You can say tell me a space fact, or, you can say exit... What can I help you with?";
+  "You can say find a burger place to eat in Seattle, or, you can say exit... What can I help you with?";
 const HELP_REPROMPT = "What can I help you with?";
 const STOP_MESSAGE = "Goodbye!";
 
@@ -54,13 +53,13 @@ function buildHandlers(event) {
     },
     findRestaurant: function() {
       let myLocation = event.request.intent.slots.city.value;
-      // let term;
-      // if (event.request.intent.slots.place.value) {
-      //   term = event.request.intent.slots.place.value;
-      // }
+      let term;
+      if (event.request.intent.slots.hasOwnProperty("place")) {
+        term = event.request.intent.slots.place.value;
+      }
 
       const search = {
-        // term,
+        term,
         radius: 10000,
         limit: 50,
         open_now: true,
@@ -68,13 +67,6 @@ function buildHandlers(event) {
         location: myLocation
       };
 
-      console.log(search);
-
-      // // if (myLocation) {
-      // //   search.location = myLocation;
-      // // } else {
-      // //   search.location = getLocation(event);
-      // // }
       client
         .search(search)
         .then(response => {
@@ -84,13 +76,17 @@ function buildHandlers(event) {
             console.log("No Locations");
             return;
           }
-          let choice = Math.floor(Math.random() * (len + 1));
-          let miles = parseInt(clientResponse[choice].distance * 0.00062137);
+          let choice = Math.floor(Math.random() * len);
+          let name = clientResponse[choice].name;
+          let dist = (clientResponse[choice].distance * 0.00062137).toFixed(1);
+          let miles = dist === 1 ? "mile" : "miles";
           let rating = clientResponse[choice].rating;
-          let res = `How about trying ${
-            clientResponse[choice].name
-          }. It is ${miles} miles away from your location given, is currently open and has ${rating} out of 5 stars.`;
-          this.response.cardRenderer(res);
+          let res = [
+            `How about trying ${name}. It is ${dist} ${miles} away from your given location, is currently open, and has ${rating} out of 5 stars.`,
+            `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars.`
+          ];
+          let resIndex = Math.floor(Math.random() * res.length);
+          this.response.cardRenderer(res[resIndex]);
           this.response.speak(res);
           this.emit(":responseReady");
         })
