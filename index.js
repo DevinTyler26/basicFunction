@@ -19,7 +19,7 @@ const client = yelp.client(process.env.apiKey);
 
 //Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
 //Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
-const APP_ID = "amzn1.ask.skill.aacf2066-fbd6-4006-953c-2b568ef7281a";
+const APP_ID = process.env.APP_ID;
 
 const SKILL_NAME = "I Don't know, you decide";
 const HELP_MESSAGE =
@@ -52,6 +52,16 @@ function buildHandlers(event) {
       // this.emit('GetNewFactIntent');
     },
     findRestaurant: function() {
+      if (!event.request.intent.slots.hasOwnProperty("city")) {
+        this.response.cardRenderer(
+          "Sorry, I didn't hear a location, please try again."
+        );
+        this.response.speak(
+          "Sorry, I didn't hear a location, please try again."
+        );
+        this.emit(":responseReady");
+        return;
+      }
       let myLocation = event.request.intent.slots.city.value;
       let term;
       if (event.request.intent.slots.hasOwnProperty("place")) {
