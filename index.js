@@ -42,14 +42,10 @@ const greetings = [
 function buildHandlers(event) {
   var handlers = {
     LaunchRequest: function() {
-      const greetingsIndex = Math.floor(Math.random() * greetings.length);
-      const randomGreeting = greetings[greetingsIndex];
-      const speechOutput = randomGreeting;
+      const speechOutput = getRandomGreeting();
       this.response.cardRenderer(SKILL_NAME, randomGreeting);
       this.response.speak(speechOutput);
       this.emit(":responseReady");
-
-      // this.emit('GetNewFactIntent');
     },
     findRestaurant: function() {
       if (!event.request.intent.slots.hasOwnProperty("city")) {
@@ -86,18 +82,9 @@ function buildHandlers(event) {
             console.log("No Locations");
             return;
           }
-          let choice = Math.floor(Math.random() * len);
-          let name = clientResponse[choice].name;
-          let dist = (clientResponse[choice].distance * 0.00062137).toFixed(1);
-          let miles = dist === 1 ? "mile" : "miles";
-          let rating = clientResponse[choice].rating;
-          let res = [
-            `How about trying ${name}. It is ${dist} ${miles} away from your given location, is currently open, and has ${rating} out of 5 stars.`,
-            `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars.`
-          ];
-          let resIndex = Math.floor(Math.random() * res.length);
-          this.response.cardRenderer(res[resIndex]);
-          this.response.speak(res);
+          let foundRestaurantResponse = buildResponse(len, clientResponse);
+          this.response.cardRenderer(foundRestaurantResponse);
+          this.response.speak(foundRestaurantResponse);
           this.emit(":responseReady");
         })
         .catch(e => {
@@ -122,6 +109,29 @@ function buildHandlers(event) {
   };
 
   return handlers;
+
+  // Gets a random greeting
+  function getRandomGreeting() {
+    const greetingsIndex = Math.floor(Math.random() * greetings.length);
+    const randomGreeting = greetings[greetingsIndex];
+    return randomGreeting;
+  }
+
+  // Builds response once a restaurant is found
+  function buildResponse(len, clientResponse) {
+    let choice = Math.floor(Math.random() * len);
+    let name = clientResponse[choice].name;
+    let dist = (clientResponse[choice].distance * 0.00062137).toFixed(1);
+    let miles = dist === 1 ? "mile" : "miles";
+    let rating = clientResponse[choice].rating;
+    let res = [
+      `How about trying ${name}. It is ${dist} ${miles} away from your given location, is currently open, and has ${rating} out of 5 stars.`,
+      `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars.`
+    ];
+    let resIndex = Math.floor(Math.random() * res.length);
+    let foundRestaurantResponse = res[resIndex];
+    return foundRestaurantResponse;
+  }
 }
 
 exports.handler = function(event, context, callback) {
