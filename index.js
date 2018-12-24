@@ -40,7 +40,48 @@ const greetings = [
 //=========================================================================================================================================
 //Editing anything below this line might break your skill.
 //=========================================================================================================================================
-async function buildHandlers(event) {
+const buildHandlers = event => {
+  const getRandomNumber = max => {
+    const number = Math.floor(Math.random() * max);
+    return number;
+  };
+
+  // Gets a random greeting
+  const getRandomGreeting = () => {
+    const greetingsIndex = getRandomNumber(greetings.length);
+    const randomGreeting = greetings[greetingsIndex];
+    return randomGreeting;
+  };
+
+  // Builds response once a restaurant is found
+  const pickAndBuildResponse = (len, yelpResponse, location) => {
+    let choice = getRandomNumber(len);
+    let picked = yelpResponse[choice];
+    let name = picked.name;
+    let dist = (picked.distance * 0.00062137).toFixed(1);
+    let miles = dist === 1 ? "mile" : "miles";
+    let rating = picked.rating;
+    let number = formatPhoneNumber(picked.phone);
+    let res = [
+      `How about trying ${name}. It is ${dist} ${miles} away from ${location}, is currently open, and has ${rating} out of 5 stars. Their phone number is ${number}.`,
+      `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars. Their phone number is ${number}.`,
+      `It looks like there is a place called ${name}. ${name} is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars. Their phone number is ${number}.`
+    ];
+    let resIndex = getRandomNumber(res.length);
+    let pickedRestaurantResponse = res[resIndex];
+    return pickedRestaurantResponse;
+  };
+
+  // Formats number string from yelp response using regex
+  const formatPhoneNumber = phoneNumberString => {
+    var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
+    var match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return ["(", match[2], ") ", match[3], "-", match[4]].join("");
+    }
+    return null;
+  };
+
   var handlers = {
     LaunchRequest: function() {
       const speechOutput = getRandomGreeting();
@@ -83,7 +124,7 @@ async function buildHandlers(event) {
             console.log("No Locations");
             return;
           }
-          let responseToEmit = await pickAndBuildResponse(
+          let responseToEmit = pickAndBuildResponse(
             len,
             yelpResponse,
             myLocation
@@ -114,48 +155,7 @@ async function buildHandlers(event) {
   };
 
   return handlers;
-
-  function getRandomNumber(max) {
-    const number = Math.floor(Math.random() * max);
-    return number;
-  }
-
-  // Gets a random greeting
-  function getRandomGreeting() {
-    const greetingsIndex = getRandomNumber(greetings.length);
-    const randomGreeting = greetings[greetingsIndex];
-    return randomGreeting;
-  }
-
-  // Builds response once a restaurant is found
-  function pickAndBuildResponse(len, yelpResponse, location) {
-    let choice = getRandomNumber(len);
-    let picked = yelpResponse[choice];
-    let name = picked.name;
-    let dist = (picked.distance * 0.00062137).toFixed(1);
-    let miles = dist === 1 ? "mile" : "miles";
-    let rating = picked.rating;
-    let number = formatPhoneNumber(picked.phone);
-    let res = [
-      `How about trying ${name}. It is ${dist} ${miles} away from ${location}, is currently open, and has ${rating} out of 5 stars. Their phone number is ${number}.`,
-      `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars. Their phone number is ${number}.`,
-      `It looks like there is a place called ${name}. ${name} is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars. Their phone number is ${number}.`
-    ];
-    let resIndex = getRandomNumber(res.length);
-    let pickedRestaurantResponse = res[resIndex];
-    return pickedRestaurantResponse;
-  }
-
-  // Formats number string from yelp response using regex
-  function formatPhoneNumber(phoneNumberString) {
-    var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
-    var match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return ["(", match[2], ") ", match[3], "-", match[4]].join("");
-    }
-    return null;
-  }
-}
+};
 
 exports.handler = function(event, context, callback) {
   const alexa = Alexa.handler(event, context, callback);
