@@ -20,6 +20,7 @@ const client = yelp.client(process.env.apiKey);
 //Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
 //Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
 const APP_ID = process.env.APP_ID;
+console.log(APP_ID);
 
 const SKILL_NAME = "I Don't know, you decide";
 const HELP_MESSAGE =
@@ -30,10 +31,10 @@ const STOP_MESSAGE = "Goodbye!";
 //=========================================================================================================================================
 //TODO: Replace this data with your own.  You can find translations of this data at http://github.com/alexa/skill-sample-node-js-fact/data
 const greetings = [
-  "Hey! If you are pretty indecisive, you can ask things like, find a place to eat in Seattle.",
-  "Hello! If you know they type of food you want to eat, you can ask things like, find a burger place to eat in Seattle.",
+  "Hey! If you are pretty indecisive, you can ask things like, find a place to eat at in Seattle.",
+  "Hello! If you know they type of food you want to eat, you can ask things like, find a burger place to eat at in Seattle.",
   "Hello! You can leave all the decision making up to us, just ask find me a place in Bellevue",
-  "Hey! You can be very direct, just ask find me an ice cream place to eat in Redmond."
+  "Hey! You can be very direct, just ask find me an ice cream place in Redmond."
 ];
 
 //=========================================================================================================================================
