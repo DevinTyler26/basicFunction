@@ -43,7 +43,7 @@ function buildHandlers(event) {
   var handlers = {
     LaunchRequest: function() {
       const speechOutput = getRandomGreeting();
-      this.response.cardRenderer(SKILL_NAME, randomGreeting);
+      this.response.cardRenderer(SKILL_NAME, speechOutput);
       this.response.speak(speechOutput);
       this.emit(":responseReady");
     },
@@ -82,9 +82,13 @@ function buildHandlers(event) {
             console.log("No Locations");
             return;
           }
-          let foundRestaurantResponse = buildResponse(len, clientResponse);
-          this.response.cardRenderer(foundRestaurantResponse);
-          this.response.speak(foundRestaurantResponse);
+          let responseToEmit = pickAndBuildResponse(
+            len,
+            clientResponse,
+            myLocation
+          );
+          this.response.cardRenderer(responseToEmit);
+          this.response.speak(responseToEmit);
           this.emit(":responseReady");
         })
         .catch(e => {
@@ -118,20 +122,32 @@ function buildHandlers(event) {
   }
 
   // Builds response once a restaurant is found
-  function buildResponse(len, clientResponse) {
+  function pickAndBuildResponse(len, clientResponse, location) {
     let choice = Math.floor(Math.random() * len);
-    let name = clientResponse[choice].name;
-    let dist = (clientResponse[choice].distance * 0.00062137).toFixed(1);
+    let picked = clientResponse[choice];
+    let name = picked.name;
+    let dist = (picked.distance * 0.00062137).toFixed(1);
     let miles = dist === 1 ? "mile" : "miles";
-    let rating = clientResponse[choice].rating;
+    let rating = picked.rating;
+    let number = formatPhoneNumber(picked.phone);
     let res = [
-      `How about trying ${name}. It is ${dist} ${miles} away from your given location, is currently open, and has ${rating} out of 5 stars.`,
-      `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars.`
+      `How about trying ${name}. It is ${dist} ${miles} away from ${location}, is currently open, and has ${rating} out of 5 stars. Their phone number is ${number}.`,
+      `We found a place called ${name}. It is currently open, ${dist} ${miles} away, and has ${rating} out of 5 stars. Their phone number is ${number}.`
     ];
     let resIndex = Math.floor(Math.random() * res.length);
-    let foundRestaurantResponse = res[resIndex];
-    return foundRestaurantResponse;
+    let pickedRestaurantResponse = res[resIndex];
+    return pickedRestaurantResponse;
   }
+}
+
+function formatPhoneNumber(phoneNumberString) {
+  var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
+  var match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    var intlCode = match[1] ? "+1 " : "";
+    return ["(", match[2], ") ", match[3], "-", match[4]].join("");
+  }
+  return null;
 }
 
 exports.handler = function(event, context, callback) {
