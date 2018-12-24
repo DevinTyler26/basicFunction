@@ -40,7 +40,7 @@ const greetings = [
 //=========================================================================================================================================
 //Editing anything below this line might break your skill.
 //=========================================================================================================================================
-function buildHandlers(event) {
+async function buildHandlers(event) {
   var handlers = {
     LaunchRequest: function() {
       const speechOutput = getRandomGreeting();
@@ -77,15 +77,15 @@ function buildHandlers(event) {
       client
         .search(search)
         .then(response => {
-          let clientResponse = response.jsonBody.businesses;
-          let len = clientResponse.length;
+          let yelpResponse = response.jsonBody.businesses;
+          let len = yelpResponse.length;
           if (len === 0) {
             console.log("No Locations");
             return;
           }
-          let responseToEmit = pickAndBuildResponse(
+          let responseToEmit = await pickAndBuildResponse(
             len,
-            clientResponse,
+            yelpResponse,
             myLocation
           );
           this.response.cardRenderer(responseToEmit);
@@ -128,9 +128,9 @@ function buildHandlers(event) {
   }
 
   // Builds response once a restaurant is found
-  function pickAndBuildResponse(len, clientResponse, location) {
+  function pickAndBuildResponse(len, yelpResponse, location) {
     let choice = getRandomNumber(len);
-    let picked = clientResponse[choice];
+    let picked = yelpResponse[choice];
     let name = picked.name;
     let dist = (picked.distance * 0.00062137).toFixed(1);
     let miles = dist === 1 ? "mile" : "miles";
